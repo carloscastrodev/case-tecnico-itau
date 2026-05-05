@@ -16,6 +16,11 @@ const config = () => ({
 
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRATION_TIME: process.env.JWT_EXPIRATION_TIME,
+  JWT_AUDIENCE: process.env.JWT_AUDIENCE,
+  JWT_ISSUER: process.env.JWT_ISSUER,
+
+  MOCKED_USER_USERNAME: process.env.MOCKED_USER_USERNAME,
+  MOCKED_USER_PASSWORD: process.env.MOCKED_USER_PASSWORD,
 });
 
 export type Config = ReturnType<typeof config>;

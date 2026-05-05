@@ -7,7 +7,10 @@ export const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string(),
   AWS_REGION: z.string(),
   DYNAMODB_ENDPOINT: z.string(),
-  PORT: z.string().transform((val) => Number(val)).optional(),
+  PORT: z
+    .string()
+    .transform((val) => Number(val))
+    .optional(),
 
   SWAGGER_TITLE: z.string().optional(),
   SWAGGER_DESCRIPTION: z.string().optional(),
@@ -17,6 +20,11 @@ export const envSchema = z.object({
 
   JWT_SECRET: z.string(),
   JWT_EXPIRATION_TIME: z.string(),
+  JWT_AUDIENCE: z.string(),
+  JWT_ISSUER: z.string(),
+
+  MOCKED_USER_USERNAME: z.string().optional(),
+  MOCKED_USER_PASSWORD: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
