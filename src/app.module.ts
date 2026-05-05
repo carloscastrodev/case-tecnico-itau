@@ -3,13 +3,13 @@ import { AuthModule } from '@/modules/auth/auth.module';
 import { MessagesModule } from '@/modules/messages/messages.module';
 import { LibsModule } from '@/libs.module';
 import { ConfigModule } from '@nestjs/config';
-import { validateEnv } from './config/validate';
+import { validateEnv } from '@/config/validate';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validate: validateEnv
+      validate: validateEnv,
     }),
     LibsModule,
     AuthModule,
@@ -18,4 +18,4 @@ import { validateEnv } from './config/validate';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

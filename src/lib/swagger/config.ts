@@ -1,7 +1,7 @@
-import { Config } from "@/config/config";
-import { INestApplication } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { Config } from '@/config/config';
+import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const FALLBACK_SWAGGER_CONFIG = {
   title: 'Case Técnico Itaú - API de Mensagens',
@@ -12,7 +12,7 @@ const FALLBACK_SWAGGER_CONFIG = {
 };
 
 export default function configSwagger(app: INestApplication<any>) {
-  const envConfig = app.get(ConfigService<Config>)
+  const envConfig = app.get(ConfigService<Config>);
   const config = new DocumentBuilder()
     .setTitle(envConfig.get('SWAGGER_TITLE', FALLBACK_SWAGGER_CONFIG.title))
     .setDescription(envConfig.get('SWAGGER_DESCRIPTION', FALLBACK_SWAGGER_CONFIG.description))
@@ -27,7 +27,7 @@ export default function configSwagger(app: INestApplication<any>) {
         description: 'Insira o token JWT',
         in: 'header',
       },
-      'Autenticação JWT'
+      'Autenticação JWT',
     )
     .build();
 
