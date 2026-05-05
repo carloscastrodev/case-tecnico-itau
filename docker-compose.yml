@@ -1,0 +1,26 @@
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: dynamodb-local
+    ports:
+      - '8000:8000'
+    command: '-jar DynamoDBLocal.jar -sharedDb -dbPath .'
+    volumes:
+      - ./dynamodb_data:/home/dynamodblocal/data
+    working_dir: /home/dynamodblocal
+
+  backend:
+    build:
+      dockerfile: dockerfile.development
+      context: .
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '${PORT:-3001}:3001'
+    command: yarn start:dev
+    env_file:
+      - .env
+    depends_on:
+      - dynamodb-local
