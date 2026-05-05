@@ -1,0 +1,21 @@
+# Artifacts
+.gemini
+antigravity
+
+# Dependencies
+node_modules
+yarn.lock
+package-lock.json
+
+# Build outputs
+dist
+build
+coverage
+
+# IDE settings (optional to ignore, but often better to keep them formatted if JSON)
+#.vscode
+
+# Other
+.env
+.env.*
+dynamodb_data
