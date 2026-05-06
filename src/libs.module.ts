@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
-import { isProduction } from '@/utils/environment';
+import { isProduction, isTesting } from '@/utils/environment';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
 import { Env } from './config/validate';
@@ -11,6 +11,7 @@ import { Env } from './config/validate';
       pinoHttp: {
         redact: ['req.headers.authorization', 'req.headers.cookie'],
         transport: isProduction() ? undefined : { target: 'pino-pretty' },
+        level: isTesting() ? 'silent' : 'info', // Caso queira ver os logs da aplicação durante os testes, modifique essa linha
       },
     }),
     DynamooseModule.forRootAsync({
