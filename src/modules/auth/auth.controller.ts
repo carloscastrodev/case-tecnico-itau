@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { SignInRequestDto } from './request/sign-in.request';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SignInUseCase } from './use-cases/sign-in';
@@ -9,9 +9,10 @@ export class AuthController {
   constructor(private readonly signInUseCase: SignInUseCase) {}
 
   @Post('sign-in')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Autenticação do usuário' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Usuário autenticado com sucesso.',
     example: {
       accessToken:
@@ -23,15 +24,15 @@ export class AuthController {
     },
   })
   @ApiResponse({
-    status: 401,
+    status: HttpStatus.UNAUTHORIZED,
     description: 'Credenciais inválidas.',
-    example: { statusCode: 401, error: 'Unauthorized', message: 'Credenciais inválidas' },
+    example: { statusCode: HttpStatus.UNAUTHORIZED, error: 'Unauthorized', message: 'Credenciais inválidas' },
   })
   @ApiResponse({
-    status: 500,
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor ou variável de ambiente não configurada.',
     example: {
-      statusCode: 500,
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       error: 'Internal Server Error',
       message: 'Erro interno do servidor ou variável de ambiente não configurada.',
     },
