@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ENVIRONMENT } from './environment';
 
 export const envSchema = z.object({
-  NODE_ENV: z.enum([ENVIRONMENT.PRODUCTION, ENVIRONMENT.DEVELOPMENT]),
+  NODE_ENV: z.enum([ENVIRONMENT.PRODUCTION, ENVIRONMENT.DEVELOPMENT, ENVIRONMENT.TEST]),
   AWS_ACCESS_KEY_ID: z.string(),
   AWS_SECRET_ACCESS_KEY: z.string(),
   AWS_REGION: z.string(),
