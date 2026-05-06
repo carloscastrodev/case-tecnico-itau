@@ -1,15 +1,32 @@
+import { HttpStatus, INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { json } from 'express';
 import { Logger } from 'nestjs-pino';
-import { VersioningType } from '@nestjs/common';
+import { AppModule } from './app.module';
+import { isDevelopment, isTesting } from './utils/environment';
 import configSwagger from './lib/swagger/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  app.useLogger(app.get(Logger));
-
+  configureApp(app);
   configSwagger(app);
+  app.enableShutdownHooks();
+  const port = process.env.PORT ?? 3001;
+
+  await app.listen(port);
+
+  app.get(Logger).log(`Application is running on port ${port}`);
+}
+
+export async function configureApp(app: INestApplication<any>) {
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      enableDebugMessages: isDevelopment() || isTesting(),
+      errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+    }),
+  );
 
   app.use(json());
 
@@ -19,13 +36,6 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
-
-  app.enableShutdownHooks();
-
-  const port = process.env.PORT ?? 3001;
-
-  await app.listen(port);
-
-  app.get(Logger).log(`Application is running on port ${port}`);
 }
+
 bootstrap();
