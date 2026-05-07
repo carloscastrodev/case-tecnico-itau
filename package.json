@@ -1,7 +1,7 @@
 {
-  "name": "challenge-itau",
+  "name": "case-tecnico-itau",
   "version": "0.0.1",
-  "description": "CRUD de Mensagens para o challenge do Itaú",
+  "description": "CRUD de Mensagens para o case técnico do Itaú",
   "author": "Carlos Castro",
   "private": true,
   "license": "MIT",
