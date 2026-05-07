@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '@/app.module';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { configureApp } from '@/main';
-import { Logger } from 'nestjs-pino';
 
 describe('Auth [E2E]', () => {
   let app: INestApplication;
@@ -11,17 +10,6 @@ describe('Auth [E2E]', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-      providers: [
-        {
-          provide: Logger,
-          useValue: {
-            log: jest.fn(),
-            error: jest.fn(),
-            warn: jest.fn(),
-            debug: jest.fn(),
-          },
-        },
-      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
