@@ -1,8 +1,15 @@
+import { DecodedJwt } from '@/types/decoded-jwt';
 import { ExecutionContext } from '@nestjs/common';
 
-export const executionContextFactory = ({ headers }: { headers: Record<string, string> }): ExecutionContext =>
+export const executionContextFactory = ({
+  headers,
+  user,
+}: {
+  headers?: Record<string, string>;
+  user?: DecodedJwt;
+}): ExecutionContext =>
   ({
     switchToHttp: jest.fn().mockReturnValue({
-      getRequest: jest.fn().mockReturnValue({ headers }),
+      getRequest: jest.fn().mockReturnValue({ headers, user }),
     }),
   }) as unknown as ExecutionContext;
