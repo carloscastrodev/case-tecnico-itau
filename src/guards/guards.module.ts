@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AuthenticatedGuard } from './authenticated.guard';
 
+@Global()
 @Module({
-  imports: [],
-  controllers: [],
   providers: [AuthenticatedGuard],
+  exports: [AuthenticatedGuard],
 })
 export class GuardsModule {}
