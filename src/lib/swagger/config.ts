@@ -27,7 +27,7 @@ export default function configSwagger(app: INestApplication<any>) {
         description: 'Insira o token JWT',
         in: 'header',
       },
-      'Autenticação JWT',
+      'JWT',
     )
     .build();
 
