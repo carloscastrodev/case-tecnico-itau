@@ -9,6 +9,28 @@ services:
       - ./dynamodb_data:/home/dynamodblocal/data
     working_dir: /home/dynamodblocal
 
+  dd-agent:
+    image: registry.datadoghq.com/agent:7
+    container_name: dd-agent
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_SITE=${DD_SITE:-datadoghq.com}
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_APM_ENABLED=true
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      # Host metrics disabled: collect container/APM/log data only.
+      - DD_ENABLE_METADATA_COLLECTION=false
+      - DD_PROCESS_AGENT_ENABLED=false
+      - DD_SYSTEM_PROBE_ENABLED=false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    ports:
+      - '8125:8125/udp'
+      - '8126:8126'
+
   backend:
     build:
       dockerfile: dockerfile.development
@@ -24,3 +46,4 @@ services:
       - .env
     depends_on:
       - dynamodb-local
+      - dd-agent
