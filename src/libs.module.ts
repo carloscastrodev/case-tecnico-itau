@@ -5,6 +5,7 @@ import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
 import { Env } from './config/validate';
 import { DynamooseModelsModule } from './lib/dynamoose/dynamoose.models.module';
+import { DatadogTraceModule } from 'nestjs-ddtrace';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { DynamooseModelsModule } from './lib/dynamoose/dynamoose.models.module';
         // Provavelmente isso deveria ser uma variável de ambiente própria
       },
     }),
+    DatadogTraceModule.forRoot(),
     DynamooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService<Env>) => ({
