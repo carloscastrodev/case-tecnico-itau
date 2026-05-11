@@ -8,10 +8,6 @@ export const MessageSchema = new Schema(
       type: String,
       hashKey: true,
     },
-    sk: {
-      type: String,
-      rangeKey: true,
-    },
     gsi1pk: {
       type: String,
       index: {
