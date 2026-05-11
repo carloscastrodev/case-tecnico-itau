@@ -20,6 +20,45 @@ Este projeto é uma API REST desenvolvida com NestJS para atender aos requisitos
 - Swagger para documentação
 - Eslint e Prettier para formatação do código
 
+## Estrutura de pastas
+
+```
+src/
+├── config/                       # Configurações e validações de variáveis de ambiente (ConfigService)
+├── decorators/                   # Decorators customizados reutilizáveis pela aplicação
+│   └── tests/                    # Testes unitários dos decorators
+├── guards/                       # Guards do NestJS (autenticação, throttling, etc.)
+│   └── tests/                    # Testes unitários dos guards
+├── lib/                          # Configurações de bibliotecas terceiras que não são Injectables ou Módulos do NestJS
+│   ├── dynamoose/                # Configurações e modelos do Dynamoose (DynamoDB)
+│   │   ├── exceptions/           # Exceções customizadas relacionadas ao Dynamoose
+│   │   └── schemas/              # Schemas do Dynamoose
+│   │       ├── message/          # Schemas do modelo Message
+│   │       └── rate-limit/       # Schemas do modelo de Rate Limit
+│   ├── express/                  # Tipagens auxiliares relacionadas ao Express
+│   └── swagger/                  # Configurações do Swagger
+├── modules/                      # Módulos da aplicação
+│   ├── auth/                     # Módulo de autenticação
+│   │   ├── docs/                 # Decorators de documentação do Swagger para casos em que a documentação do Swagger é muito verbosa
+│   │   ├── request/              # DTOs de requisições
+│   │   ├── response/             # DTOs de resposta
+│   │   ├── tests/                # Testes
+│   │   └── use-cases/            # Casos de uso
+│   ├── messages/                 # Módulo de mensagens
+│   │   ├── docs/                 # Decorators de documentação do Swagger do módulo de mensagens
+│   │   ├── repositories/         # Camada de repositório (acesso a dados) de mensagens
+│   │   ├── request/              # DTOs de requisições
+│   │   ├── response/             # DTOs de resposta
+│   │   ├── tests/                # Testes
+│   │   └── use-cases/            # Casos de uso
+│   └── rate-limit/               # Módulo de Rate Limit (Throttler)
+│       └── storage/              # Implementação custom de storage do Throttler (persistido em DynamoDB)
+├── tests/                        # Utilitários compartilhados de testes
+│   └── fixtures/                 # Fixtures e helpers reutilizados pelos testes
+├── types/                        # Tipos/Interfaces compartilhados pela aplicação
+└── utils/                        # Funções utilitárias simples
+```
+
 ## Como rodar localmente
 
 ### 1. Clone o repositório
@@ -87,6 +126,7 @@ Em seguida, insira o JWT no campo do modal aberto.
 - Utilizei o Claude para:
   - gerar parte dos testes de integração de mensagens e solucionar alguns bugs que estava tendo na minha implementação inicial (dos testes e dos endpoints de listagem com filtros);
   - ponderar sobre a modelagem do banco em relação ao uso de GSIs vs denormalização dos dados;
+  - implementação da classe de storage do Throttler do NestJS (Rate Limit com Janela Fixa);
   - ajudar a melhorar a formatação desse README.
 
 Em alguns pontos da aplicação estão alguns comentários onde utilizei/como utilizei.
@@ -120,24 +160,11 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 
 - Tentei isolar o acesso aos dados (e o acesso ao Dynamoose) na camada de repositório. A intenção aqui é que fosse possível modificar o banco de dados apenas alterando essa camada, sem modificação das regras de negócio. Não sei se consegui atingir o objetivo aqui.
 
-## Estrutura de pastas
+## Rate limit na autenticação
 
-```
-├───config - Configurações e validações de variáveis de ambiente (ConfigService)
-├───database - Configurações do banco de dados (DynamoDB)
-│ └───schemas
-│ └───message - Schemas do modelo Message
-├───lib - Configurações de bibliotecas terceiras que não são Injectables ou Módulos do NestJS
-│ └───swagger - Configurações do Swagger
-├───modules - Módulos da aplicação
-│ ├───auth - Módulo de autenticação
-│ │ ├───docs - Decorators de documentação do Swagger para casos em que a documentação do Swagger é muito verbosa.
-│ │ ├───request - DTOs de requisições
-│ │ ├───response - DTOs de resposta
-│ │ ├───tests - Testes
-│ │ └───use-cases - Casos de uso
-│ └───messages
-│ ├───request
-│ └───response
-└───utils - Funções utilitárias simples
-```
+- Rate limit em rotas de autenticação é um padrão comum, para evitar ataques de brute-force. Aqui usei o pacote throttler do nest junto com um storage custom (no próprio DynamoDB). A implementação do storage fiz com ajuda do Claude. Optei por utilizar o próprio DynamoDB aqui simplesmente para exercitar o design de single table (e por não ter experiência com redis). Poderia ter utilizado essa [biblioteca](https://github.com/jmcdo29/nest-lab/tree/main/packages/throttler-storage-redis), mas preferi seguir com o DynamoDB. A implementação ficou um pouco inocente. É uma janela fixa que não considera se o usuário acertou o errou a senha, então teoricamente um usuário com rate limit mesmo
+  acertando a senha na próxima requisição ficaria bloqueado por um tempo até conseguir logar. Talvez para melhorar esse ponto poderia ter pensado em uma forma de incrementar a duração dos bloqueios progressivamente após cada rate limit, mas optei por não fazer.
+
+## Por que mais testes de integração do que unitários?
+
+- Eu particularmente prefiro testar a aplicação de forma mais similar a como um usuário iria interagir com ela. Em testes unitários eu acabo tendo que criar muitos mocks, e parece que eu estou testando mais a implementação de certas coisas do que sua interface propriamente. Talvez eu esteja fazendo isso de forma incorreta? De qualquer forma eu acredito que testes de integração (com banco de dados de teste, etc.) são mais interessantes e fiéis ao que seria o comportamento real da aplicação.
