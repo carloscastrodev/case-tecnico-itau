@@ -1,7 +1,7 @@
 export enum MESSAGE_STATUS {
-  SENT = 'SENT',
-  RECEIVED = 'RECEIVED',
-  READ = 'READ',
+  SENT = 'enviado',
+  RECEIVED = 'recebido',
+  READ = 'lido',
 }
 
 export interface MessageKey {
