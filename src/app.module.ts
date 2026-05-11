@@ -5,6 +5,7 @@ import { LibsModule } from '@/libs.module';
 import { ConfigModule } from '@nestjs/config';
 import { validateEnv } from '@/config/validate';
 import { GuardsModule } from './guards/guards.module';
+import { RateLimitModule } from './modules/rate-limit/rate-limit.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { GuardsModule } from './guards/guards.module';
     LibsModule,
     AuthModule,
     MessagesModule,
+    RateLimitModule,
   ],
   controllers: [],
   providers: [],
