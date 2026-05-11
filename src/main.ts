@@ -1,3 +1,4 @@
+import './lib/datadog/tracer';
 import { HttpStatus, INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { json } from 'express';
