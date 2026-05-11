@@ -3,18 +3,21 @@ import { AppModule } from '@/app.module';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { configureApp } from '@/main';
+import { GenericContainer, StartedTestContainer } from 'testcontainers';
+import { ConfigService } from '@nestjs/config';
+import { e2eSetup } from '@/tests/fixtures/e2e-setup';
 
 describe('Auth [E2E]', () => {
   let app: INestApplication;
+  let container: StartedTestContainer;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    ({ app, container } = await e2eSetup());
+  });
 
-    app = moduleFixture.createNestApplication();
-    configureApp(app);
-    await app.init();
+  afterAll(async () => {
+    await app?.close();
+    await container?.stop();
   });
 
   describe('POST /v1/auth/sign-in', () => {
@@ -56,6 +59,35 @@ describe('Auth [E2E]', () => {
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('message');
+    });
+
+    it('should return 429 with a message and correct headers when making more than 5 requests in 1 minute', async () => {
+      for (let i = 0; i < 6; i++) {
+        const response = await request(app.getHttpServer()).post('/v1/auth/sign-in').send({
+          username: 'some-username',
+          password: 'some-password',
+        });
+
+        if (i < 5) {
+          expect(response.status).toBe(401);
+        } else {
+          expect(response.status).toBe(429);
+          expect(response.body).toHaveProperty('message');
+          expect(response.headers).toHaveProperty('retry-after');
+          expect(Number(response.headers['retry-after'])).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('should not rate limit different usernames when making more than 5 requests in 1 minute', async () => {
+      for (let i = 0; i < 6; i++) {
+        const response = await request(app.getHttpServer()).post('/v1/auth/sign-in').send({
+          username: i.toString(),
+          password: 'some-password',
+        });
+
+        expect(response.status).toBe(401);
+      }
     });
   });
 
