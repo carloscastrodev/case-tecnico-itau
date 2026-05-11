@@ -15,7 +15,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  app.get(Logger).log(`Application is running on port ${port}`);
+  app.get(Logger).log(`Aplicação rodando na porta: ${port}`);
 }
 
 export async function configureApp(app: INestApplication<any>) {
@@ -38,4 +38,12 @@ export async function configureApp(app: INestApplication<any>) {
   });
 }
 
-bootstrap();
+// Aqui eu cometi um erro criando o configureApp e importando ele nos testes
+// Isso fazia uma instância adicional do nest ser inicializada
+// Corrigi isso (com ajuda do Claude) dessa forma abaixo.
+// A alternativa mais correta provavelmente seria ter isolado
+// o configureApp em outro arquivo, mas decidi manter isso aqui
+// para discussão
+if (require.main === module) {
+  bootstrap();
+}
