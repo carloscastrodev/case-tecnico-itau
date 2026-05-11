@@ -1,13 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '@/app.module';
+import { MESSAGE_STATUS } from '@/lib/dynamoose/schemas/message/message.interface';
+import { e2eSetup } from '@/tests/fixtures/e2e-setup';
+import { ORDER } from '@/types/order-enum';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { configureApp } from '@/main';
-import { GenericContainer, StartedTestContainer } from 'testcontainers';
+import { StartedTestContainer } from 'testcontainers';
 import { CreateMessageRequestDto } from '../request/create-message.request';
-import { MESSAGE_STATUS } from '@/lib/dynamoose/schemas/message/message.interface';
-import { ORDER } from '@/types/order-enum';
-import { ConfigService } from '@nestjs/config';
 
 // A maioria desses testes foi gerada em conjunto com o Claude
 // Comecei escrevendo alguns manualmente mas o boilerplate era grande
@@ -44,25 +41,7 @@ describe('Messages [E2E]', () => {
   };
 
   beforeAll(async () => {
-    container = await new GenericContainer('amazon/dynamodb-local').withExposedPorts(8000).start();
-
-    const containerEndpoint = `http://${container.getHost()}:${container.getMappedPort(8000)}`;
-
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(ConfigService)
-      .useValue({
-        get: (key: string) => {
-          if (key === 'DYNAMODB_ENDPOINT') return containerEndpoint;
-          return process.env[key];
-        },
-      })
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    configureApp(app);
-    await app.init();
+    ({ app, container } = await e2eSetup());
 
     const { body } = await request(app.getHttpServer()).post('/v1/auth/sign-in').send({
       username: process.env.MOCKED_USER_USERNAME,
