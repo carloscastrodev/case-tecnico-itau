@@ -1,5 +1,5 @@
 import { THROTTLE_BODY_FIELD } from '@/decorators/throttle-body-field.decorator';
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
   ThrottlerException,
@@ -38,6 +38,13 @@ export class BodyThrottleGuard extends ThrottlerGuard {
   }
 
   protected async throwThrottlingException(_context: ExecutionContext): Promise<void> {
-    throw new ThrottlerException('Muitas requisições. Por favor, tente novamente mais tarde.');
+    throw new HttpException(
+      {
+        statusCode: HttpStatus.TOO_MANY_REQUESTS,
+        error: 'Too Many Requests',
+        message: 'Muitas requisições. Por favor, tente novamente mais tarde.',
+      },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
   }
 }
