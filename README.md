@@ -75,6 +75,12 @@ git clone https://github.com/carloscastrodev/challenge-itau.git
 cp .env.example .env
 ```
 
+### 2.1 (Opcional) Configurar o DataDog no .env
+
+```bash
+Modifique a variável DD_API_KEY= no .env com a sua chave do DataDog
+```
+
 ### 3. Inicie a aplicação com o Docker
 
 ```bash
@@ -99,7 +105,7 @@ yarn start:docker
 ### 4. Acesse o Swagger para testar a aplicação
 
 ```bash
-http://localhost:3001/api/docs                               |
+http://localhost:3001/api/docs
 ```
 
 ## Testes
