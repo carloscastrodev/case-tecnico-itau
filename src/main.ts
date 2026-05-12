@@ -18,6 +18,7 @@ async function bootstrap() {
   await app.listen(port);
 
   app.get(Logger).log(`Aplicação rodando na porta: ${port}`);
+  app.get(Logger).log(`Documentação (SWAGGER): /api/docs`);
 }
 
 export async function configureApp(app: INestApplication<any>) {
