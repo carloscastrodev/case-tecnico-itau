@@ -60,4 +60,4 @@ export const MessageSchema = new Schema(
 );
 
 export const MessageModelName = 'Message';
-export const MessageModel = model(MessageModelName, MessageSchema);
+export const MessageModel = model(MessageModelName, MessageSchema, { initialize: false });

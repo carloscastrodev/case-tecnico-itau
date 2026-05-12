@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, OnApplicationBootstrap, Inject } from '@nestjs/common';
 import { MessageModel } from './schemas/message/message.schema';
 import { isDevelopment, isTesting } from '@/utils/environment';
 import { Table } from 'dynamoose';
@@ -15,11 +15,13 @@ export const SHARED_TABLE_NAME = 'shared-table';
   providers: [
     {
       provide: SHARED_TABLE,
-      useValue: () =>
+      inject: [],
+      useFactory: () =>
         new Table(SHARED_TABLE_NAME, [MessageModel, RateLimitModel], {
           create: isDevelopment() || isTesting(),
           update: isDevelopment() || isTesting(),
           waitForActive: { enabled: isDevelopment() || isTesting() },
+          initialize: false,
           expires: {
             attribute: 'ttl',
             items: {
@@ -37,4 +39,10 @@ export const SHARED_TABLE_NAME = 'shared-table';
   ],
   exports: [SHARED_TABLE, MESSAGE_MODEL, RATE_LIMIT_MODEL],
 })
-export class DynamooseModelsModule {}
+export class DynamooseModelsModule implements OnApplicationBootstrap {
+  constructor(@Inject(SHARED_TABLE) private readonly table: typeof Table) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.table.initialize();
+  }
+}

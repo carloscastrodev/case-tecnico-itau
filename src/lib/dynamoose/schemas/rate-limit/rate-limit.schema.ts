@@ -37,4 +37,4 @@ export const RateLimitSchema = new Schema(
 );
 
 export const RateLimitModelName = 'RateLimit';
-export const RateLimitModel = model(RateLimitModelName, RateLimitSchema);
+export const RateLimitModel = model(RateLimitModelName, RateLimitSchema, { initialize: false });
