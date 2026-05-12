@@ -257,8 +257,8 @@ export class MessageRepositoryDynamoose implements IMessageRepository {
     return `SENDER#${sender}#`;
   }
 
-  private getGSI1SK(date: string): string {
-    return `CREATED_AT#${date}#`;
+  private getGSI1SK(isoDateTime: string): string {
+    return `CREATED_AT#${isoDateTime}#`;
   }
 
   private getGSI2PK(isoDateTime: string): string {
