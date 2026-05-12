@@ -1,15 +1,13 @@
-import { DecodedJwt } from '@/types/decoded-jwt';
 import { THROTTLE_BODY_FIELD, ThrottleBodyField } from '../throttle-body-field.decorator';
 
-const mockSetMetadata = jest.fn();
-
-jest.mock('@nestjs/core', () => ({
-  SetMetadata: mockSetMetadata,
+jest.mock('@nestjs/common', () => ({
+  SetMetadata: jest.fn(),
 }));
 
-describe('Throttle Body Field Decorator [UNIT]', () => {
-  const mockedUser: DecodedJwt = { username: 'user', exp: 0, iat: 0, aud: '', iss: '' };
+import { SetMetadata } from '@nestjs/common';
+const mockSetMetadata = SetMetadata as jest.Mock;
 
+describe('Throttle Body Field Decorator [UNIT]', () => {
   it('should set metadata correctly', async () => {
     const field = 'field';
     ThrottleBodyField(field);
