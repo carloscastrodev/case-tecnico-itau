@@ -19,6 +19,7 @@ Este projeto é uma API REST desenvolvida com NestJS para atender aos requisitos
 - NestJS Pino para logs estruturados
 - Swagger para documentação
 - Eslint e Prettier para formatação do código
+- Datadog para observabilidade (com nestjs-ddtrace e agente rodando no docker)
 
 ## Estrutura de pastas
 
@@ -30,6 +31,7 @@ src/
 ├── guards/                       # Guards do NestJS (autenticação, throttling, etc.)
 │   └── tests/                    # Testes unitários dos guards
 ├── lib/                          # Configurações de bibliotecas terceiras que não são Injectables ou Módulos do NestJS
+│   ├── datadog/                  # Inicialização do tracer do datadog
 │   ├── dynamoose/                # Configurações e modelos do Dynamoose (DynamoDB)
 │   │   ├── exceptions/           # Exceções customizadas relacionadas ao Dynamoose
 │   │   └── schemas/              # Schemas do Dynamoose
@@ -78,8 +80,21 @@ cp .env.example .env
 ```bash
 docker compose up -d (para rodar em segundo plano)
 ou
-docker compose up (para ver os logs no terminal)
+docker compose up --attach backend (para ver os logs da aplicação no terminal)
 ```
+
+OU
+
+```bash
+npm run start:docker
+
+ou
+
+yarn start:docker
+
+```
+
+(_isso equivale a rodar o comando `docker compose up --attach backend`_)
 
 ### 4. Acesse o Swagger para testar a aplicação
 
@@ -127,6 +142,7 @@ Em seguida, insira o JWT no campo do modal aberto.
   - gerar parte dos testes de integração de mensagens e solucionar alguns bugs que estava tendo na minha implementação inicial (dos testes e dos endpoints de listagem com filtros);
   - ponderar sobre a modelagem do banco em relação ao uso de GSIs vs denormalização dos dados;
   - implementação da classe de storage do Throttler do NestJS (Rate Limit com Janela Fixa);
+  - auxilio na escrita do docker-compose (dd-agent);
   - ajudar a melhorar a formatação desse README.
 
 Em alguns pontos da aplicação estão alguns comentários onde utilizei/como utilizei.
@@ -162,9 +178,15 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 
 ## Rate limit na autenticação
 
-- Rate limit em rotas de autenticação é um padrão comum, para evitar ataques de brute-force. Aqui usei o pacote throttler do nest junto com um storage custom (no próprio DynamoDB). A implementação do storage fiz com ajuda do Claude. Optei por utilizar o próprio DynamoDB aqui simplesmente para exercitar o design de single table (e por não ter experiência com redis). Poderia ter utilizado essa [biblioteca](https://github.com/jmcdo29/nest-lab/tree/main/packages/throttler-storage-redis), mas preferi seguir com o DynamoDB. A implementação ficou um pouco inocente. É uma janela fixa que não considera se o usuário acertou o errou a senha, então teoricamente um usuário com rate limit mesmo
-  acertando a senha na próxima requisição ficaria bloqueado por um tempo até conseguir logar. Talvez para melhorar esse ponto poderia ter pensado em uma forma de incrementar a duração dos bloqueios progressivamente após cada rate limit, mas optei por não fazer.
+- Rate limit em rotas de autenticação é um padrão comum, para evitar ataques de brute-force. Aqui usei o pacote throttler do nest junto com um storage custom (no próprio DynamoDB). A implementação do storage fiz com ajuda do Claude. Optei por utilizar o próprio DynamoDB aqui simplesmente para exercitar o design de single table (e por não ter experiência com redis). Poderia ter utilizado essa [biblioteca](https://github.com/jmcdo29/nest-lab/tree/main/packages/throttler-storage-redis), mas preferi seguir com o DynamoDB. A implementação ficou um pouco inocente. É uma janela fixa que não considera se o usuário acertou o errou a senha, então teoricamente um usuário com rate limit mesmo acertando a senha na próxima requisição ficaria bloqueado por um tempo até conseguir logar. Talvez para melhorar esse ponto poderia ter pensado em uma forma de incrementar a duração dos bloqueios progressivamente após cada rate limit, mas optei por não fazer.
 
 ## Por que mais testes de integração do que unitários?
 
 - Eu particularmente prefiro testar a aplicação de forma mais similar a como um usuário iria interagir com ela. Em testes unitários eu acabo tendo que criar muitos mocks, e parece que eu estou testando mais a implementação de certas coisas do que sua interface propriamente. Talvez eu esteja fazendo isso de forma incorreta? De qualquer forma eu acredito que testes de integração (com banco de dados de teste, etc.) são mais interessantes e fiéis ao que seria o comportamento real da aplicação.
+
+## Observabilidade (Datadog)
+
+- Nesse quesito eu tenho mais experiência com [Sentry](https://sentry.io). A integração com o Nest é bem simples e automática.
+- Eu decidi tentar utilizar alguma outra ferramenta com a qual não tenho experiência, por simples aprendizado.
+- Primeiramente cogitei utilizar o [Better Stack](https://betterstack.com) porque eu ouvi falar dele recentemente e queria ver o processo de integração/interface do mesmo (por puro aprendizado). Após configurar o opentelemetry e observar alguns traces no painel eu vi que teria que fazer muita coisa manualmente para ter o mesmo que o Sentry oferecia de forma automática.
+- Por fim acabei testando o datadog (que é citado no próprio desafio e sei que é um padrão para aplicações distribuídas, e com o qual eu também não tinha experiência). A escolha casou bem com o Pino porque ele já gera logs no formato correto para vincular com os traces do datadog.
