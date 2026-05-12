@@ -1,4 +1,4 @@
-import './lib/datadog/tracer';
+import { startTracer } from './lib/datadog/tracer';
 import { HttpStatus, INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { json } from 'express';
@@ -8,6 +8,7 @@ import { isDevelopment, isTesting } from './utils/environment';
 import configSwagger from './lib/swagger/config';
 
 async function bootstrap() {
+  startTracer();
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   configureApp(app);
   configSwagger(app);
