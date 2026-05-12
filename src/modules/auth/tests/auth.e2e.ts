@@ -1,11 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '@/app.module';
+import { e2eSetup } from '@/tests/fixtures/e2e-setup';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { configureApp } from '@/main';
-import { GenericContainer, StartedTestContainer } from 'testcontainers';
-import { ConfigService } from '@nestjs/config';
-import { e2eSetup } from '@/tests/fixtures/e2e-setup';
+import { StartedTestContainer } from 'testcontainers';
 
 describe('Auth [E2E]', () => {
   let app: INestApplication;
