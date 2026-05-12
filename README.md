@@ -136,6 +136,12 @@ Pelo Swagger, isso é feito clicando botão Authorize
 
 Em seguida, insira o JWT no campo do modal aberto.
 
+## Diagrama da API
+
+Como não fiz nada muito complexo em termos arquiteturais, o diagrama é apenas um fluxograma dos casos de uso (autenticação e mensagens), incluindo os componentes do sistema por onde a requisição percorre. Inclui algumas explicações sobre os GSIs aplicados na tabela do DynamoDB, além das ferramentas de observabilidade (Pino, Datadog).
+
+![Diagrama da API](./readme-images/diagrama-api.drawio.svg)
+
 ## Uso de Agentes de IA (Claude Code)
 
 - Utilizei o Claude para:
@@ -155,14 +161,13 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 
 ### Escolha do Dynamoose
 
-- Escolhi o Dynamoose porque vi que ele é parecido com o Mongoose (que eu tenho alguma experiência), e por já
-  existir um pacote de integração com NestJS.
-- Cogitei usar o ElectroDB ou o SDK oficial da AWS para dynamodb, mas acabei optando pelo Dynamoose.
+- Escolhi o Dynamoose porque vi que ele é parecido com o Mongoose (que eu tenho alguma experiência), e por já existir um pacote de integração com NestJS.
+- Cogitei usar o [ElectroDB](https://electrodb.dev) ou o SDK oficial da AWS para dynamodb, mas acabei optando pelo Dynamoose.
 
 ### Escolha do Pino (Logger)
 
-- Escolhi o Pino em vez do Winston (ou outro logger) porque vi que ele é mais leve e performático. Não tinha experiência com nenhum.
-- Optei por usar a biblioteca NestJS-Pino porque ela vincula e loga automaticamente os dados da requisição.
+- Escolhi o [Pino](https://getpino.io) em vez do Winston (ou outro logger) porque vi que ele é mais leve e performático. Não tinha experiência com nenhum.
+- Optei por usar a biblioteca [NestJS-Pino](https://github.com/iamolegga/nestjs-pino) porque ela vincula e loga automaticamente os dados da requisição.
 
 ### Sobre a modelagem de dados
 
@@ -170,11 +175,11 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 
 ### Use Cases vs Service
 
-- Aqui simplesmente optei pelo que estou mais acostumado atualmente.
+- Aqui simplesmente optei pelo que estou mais acostumado atualmente, mas talvez a nomeclatura dos arquivos tenha fugido um pouco do padrão que apliquei no restante do projeto.
 
 ### Repositório
 
-- Tentei isolar o acesso aos dados (e o acesso ao Dynamoose) na camada de repositório. A intenção aqui é que fosse possível modificar o banco de dados apenas alterando essa camada, sem modificação das regras de negócio. Não sei se consegui atingir o objetivo aqui.
+- Tentei isolar o acesso ao banco de dados (DynamoDB) na camada de repositório. A intenção aqui é que fosse possível modificar o banco de dados apenas alterando essa camada, sem modificação das regras de negócio. Não sei se consegui atingir o objetivo aqui.
 
 ## Rate limit na autenticação
 
@@ -189,4 +194,4 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 - Nesse quesito eu tenho mais experiência com [Sentry](https://sentry.io). A integração com o Nest é bem simples e automática.
 - Eu decidi tentar utilizar alguma outra ferramenta com a qual não tenho experiência, por simples aprendizado.
 - Primeiramente cogitei utilizar o [Better Stack](https://betterstack.com) porque eu ouvi falar dele recentemente e queria ver o processo de integração/interface do mesmo (por puro aprendizado). Após configurar o opentelemetry e observar alguns traces no painel eu vi que teria que fazer muita coisa manualmente para ter o mesmo que o Sentry oferecia de forma automática.
-- Por fim acabei testando o datadog (que é citado no próprio desafio e sei que é um padrão para aplicações distribuídas, e com o qual eu também não tinha experiência). A escolha casou bem com o Pino porque ele já gera logs no formato correto para vincular com os traces do datadog.
+- Por fim acabei testando o [DataDog](https://www.datadoghq.com) (que é citado no próprio desafio e sei que é um padrão para aplicações distribuídas, e com o qual eu também não tinha experiência). A escolha casou bem com o Pino porque ele já gera logs no formato correto para vincular com os traces do datadog.
