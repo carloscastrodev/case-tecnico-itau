@@ -28,10 +28,6 @@ export const SHARED_TABLE_NAME = 'shared-table';
               returnExpired: false,
             },
           },
-          throughput: {
-            read: 50,
-            write: 25,
-          },
         }),
     },
     { provide: MESSAGE_MODEL, useValue: MessageModel },
