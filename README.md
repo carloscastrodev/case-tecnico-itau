@@ -149,6 +149,7 @@ Como não fiz nada muito complexo em termos arquiteturais, o diagrama é apenas 
   - ponderar sobre a modelagem do banco em relação ao uso de GSIs vs denormalização dos dados;
   - implementação da classe de storage do Throttler do NestJS (Rate Limit com Janela Fixa);
   - auxilio na escrita do docker-compose (dd-agent);
+  - review final do código e aderência com os requisitos (isso me lembrou de alguns pontos que eu já havia pensado mas não havia documentado nesse README);
   - ajudar a melhorar a formatação desse README.
 
 Em alguns pontos da aplicação estão alguns comentários onde utilizei/como utilizei.
@@ -161,7 +162,7 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 
 ### Escolha do Dynamoose
 
-- Escolhi o Dynamoose porque vi que ele é parecido com o Mongoose (que eu tenho alguma experiência), e por já existir um pacote de integração com NestJS.
+- Escolhi o [Dynamoose](https://dynamoosejs.com/) porque vi que ele é parecido com o Mongoose (que eu tenho alguma experiência), e por já existir um pacote de integração com NestJS.
 - Cogitei usar o [ElectroDB](https://electrodb.dev) ou o SDK oficial da AWS para dynamodb, mas acabei optando pelo Dynamoose.
 
 ### Escolha do Pino (Logger)
@@ -172,6 +173,18 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 ### Sobre a modelagem de dados
 
 - Para suportar os padrões de acesso requisitados, criei dois GSIs na tabela, optando por utilizar nomes genéricos (abordagem para tabela única). Tentei pensar em como suportar os padrões de acessos sem necessidade de GSIs, mas não consegui encontrar uma forma eficiente de fazer isso. Cheguei a cogitar (pesquisando no Claude) a duplicação dos dados (modificando a partition key e sort key) mas descartei essa ideia e optei pelos GSIs.
+- O requisito do case diz "data de envio". Eu mapeei isso pra "createdAt" mas talvez deveria ser algo separado e fornecido na requisição pelo cliente?
+- O requisito do case especifica as strings de status em negrito. Eu primeiramente implementei o enum de status com strings em inglês, mas considerando que as strings estavam em negrito no case eu acabei alterando pros valores fornecidos. Fiquei um pouco confuso aqui.
+
+## Sobre as APIs de criação e de atualização de status
+
+- A API de criação recebe do cliente o status inicial da mensagem. Talvez isso seja incorreto, e na criação eu deveria sempre colocar o status como "enviado". Confesso que com relação as regras de negócio eu talvez não tenha tido a melhor interpretação. Eu cogitei ambos os casos e escolhi o mais abrangente.
+- Da mesma forma, a API de atualização permite atualizar de qualquer status para qualquer status (Ex: uma mensagem dada como "recebido" pode ser atualizar para "enviado"). Novamente aqui eu cogitei validar e não permitir transições de status inválidas ("recebido"-> "enviado", "lido" -> "enviado", "lido" -> "recebido"), mas por fim optei pela implementação mais abrangente.
+
+## Sobre a API de busca
+
+- Nesse quesito eu talvez deveria retornar o cursor (lastKey) para paginação (uma vez que a API deveria estar apta a receber um frontend futuramente). Eu optei por interpretar o range de datas como meu cursor de paginação (Ex: filtra uma lista, pega a data da última mensagem de lista e envia como o cursor da próxima página). Aqui existe um pequeno problema, no entanto: o filtro por período é inclusivo nos dois limites, então a próxima página iria retornar a mesma mensagem do final da página anterior. Isso seria facilmente resolvido tornando o limite inferior exclusivo. Novamente fiquei em dúvida com relação ao esperado pela regra de negócio e optei pelo mais abrangente.
+- A API de busca apenas por período utiliza bucketing das mensagens por data. Aqui eu poderia ter feito uma busca serial, o que não causaria overfetch, mas talvez fosse mais lenta. Optei por uma busca paralela nos buckets e limitação na própria aplicação. Tem um comentário explicando um pouco melhor no próprio arquivo `src/modules/messages/repositories/message.repository.dynamoose.ts`. Um pequeno porém sobre isso é que eu não limitei o range da busca (endDate - startDate <= _x_ dias). Em larga escala isso provavelmente ocasionaria um gargalo de performance para uma busca com um range muito grande. Mais uma vez, como não sabia o esperado optei pela implementação mais abrangente.
 
 ### Use Cases vs Service
 
@@ -187,11 +200,11 @@ Em alguns pontos da aplicação estão alguns comentários onde utilizei/como ut
 
 ## Por que mais testes de integração do que unitários?
 
-- Eu particularmente prefiro testar a aplicação de forma mais similar a como um usuário iria interagir com ela. Em testes unitários eu acabo tendo que criar muitos mocks, e parece que eu estou testando mais a implementação de certas coisas do que sua interface propriamente. Talvez eu esteja fazendo isso de forma incorreta? De qualquer forma eu acredito que testes de integração (com banco de dados de teste, etc.) são mais interessantes e fiéis ao que seria o comportamento real da aplicação.
+- Eu particularmente prefiro testar a aplicação de forma mais similar a como um usuário iria interagir com ela. Em testes unitários eu acabo tendo que criar muitos mocks, e parece que eu estou testando mais a implementação de certas coisas do que sua interface propriamente. Talvez eu esteja fazendo isso de forma incorreta? De qualquer forma eu acredito que testes de integração (com banco de dados de teste, etc.) são mais interessantes e fiéis ao que seria o comportamento real da aplicação. Eu poderia ter escrito mais testes unitários, mas acho que a quantidade de testes que escrevi já é o suficiente para um case técnico de entrevista.
 
 ## Observabilidade (Datadog)
 
-- Nesse quesito eu tenho mais experiência com [Sentry](https://sentry.io). A integração com o Nest é bem simples e automática.
+- Nesse quesito eu tenho mais experiência com [Sentry](https://sentry.io). A integração com o Nest é bem simples e já traz muitas coisas de forma automática (traces, metrics, logs, alerts, etc).
 - Eu decidi tentar utilizar alguma outra ferramenta com a qual não tenho experiência, por simples aprendizado.
-- Primeiramente cogitei utilizar o [Better Stack](https://betterstack.com) porque eu ouvi falar dele recentemente e queria ver o processo de integração/interface do mesmo (por puro aprendizado). Após configurar o opentelemetry e observar alguns traces no painel eu vi que teria que fazer muita coisa manualmente para ter o mesmo que o Sentry oferecia de forma automática.
-- Por fim acabei testando o [DataDog](https://www.datadoghq.com) (que é citado no próprio desafio e sei que é um padrão para aplicações distribuídas, e com o qual eu também não tinha experiência). A escolha casou bem com o Pino porque ele já gera logs no formato correto para vincular com os traces do datadog.
+- Primeiramente cogitei utilizar o [Better Stack](https://betterstack.com) porque eu ouvi falar dele recentemente e queria ver o processo de integração/interface do mesmo (por puro aprendizado). Após configurar o opentelemetry e observar alguns traces no painel eu vi que teria que fazer muita coisa manualmente para ter o mesmo que o Sentry oferece de forma automática.
+- Por fim acabei testando e mantendo o [DataDog](https://www.datadoghq.com) (que é citado no próprio desafio e sei que é um padrão para aplicações distribuídas, e com o qual eu também não tinha experiência). A escolha casou bem com o Pino porque ele já gera logs no formato correto para vincular com os traces do DataDog.
