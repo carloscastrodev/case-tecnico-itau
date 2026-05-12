@@ -96,6 +96,6 @@ export class RateLimitStorageDynamoDB implements ThrottlerStorage {
   }
 
   private getPK(key: string, throttlerName: string) {
-    return `RATE_LIMIT#${throttlerName}#${key}`;
+    return `RATE_LIMIT#${throttlerName}#${key}#`;
   }
 }
