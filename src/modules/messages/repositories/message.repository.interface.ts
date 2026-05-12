@@ -22,8 +22,8 @@ export abstract class IMessageRepository {
     limit,
     order,
   }: {
-    startDate: string;
-    endDate: string;
+    startDate?: string;
+    endDate?: string;
     limit?: number;
     order?: ORDER;
   }): Promise<Message[]>;
