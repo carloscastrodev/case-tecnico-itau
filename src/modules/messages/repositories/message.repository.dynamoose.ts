@@ -26,14 +26,7 @@ export class MessageRepositoryDynamoose implements IMessageRepository {
       return null;
     }
 
-    return {
-      id: message.id,
-      content: message.content,
-      sender: message.sender,
-      status: message.status,
-      createdAt: message.createdAt,
-      updatedAt: message.updatedAt,
-    };
+    return this.toDomainObject(message);
   }
 
   async create(dto: Omit<Message, 'id' | 'pk' | 'sk' | 'createdAt' | 'updatedAt'>): Promise<Message> {
@@ -48,14 +41,7 @@ export class MessageRepositoryDynamoose implements IMessageRepository {
       gsi2sk: this.getGSI2SK(modelAttributes.createdAt),
     });
 
-    return {
-      id: createdMessage.id,
-      content: createdMessage.content,
-      sender: createdMessage.sender,
-      status: createdMessage.status,
-      createdAt: createdMessage.createdAt,
-      updatedAt: createdMessage.updatedAt,
-    };
+    return this.toDomainObject(createdMessage);
   }
 
   async patchStatus(id: string, status: MESSAGE_STATUS): Promise<Message | null> {
@@ -76,14 +62,7 @@ export class MessageRepositoryDynamoose implements IMessageRepository {
         },
       );
 
-      return {
-        id: result.id,
-        content: result.content,
-        sender: result.sender,
-        status: result.status,
-        createdAt: result.createdAt,
-        updatedAt: result.updatedAt,
-      };
+      return this.toDomainObject(result);
     } catch (err: any) {
       if (err.name === 'ConditionalCheckFailedException') {
         return null;
@@ -147,17 +126,7 @@ export class MessageRepositoryDynamoose implements IMessageRepository {
 
     const results = await Promise.all(promises);
 
-    const messages: Message[] = results
-      .flat()
-      .map((message) => ({
-        id: message.id,
-        content: message.content,
-        sender: message.sender,
-        status: message.status,
-        createdAt: message.createdAt,
-        updatedAt: message.updatedAt,
-      }))
-      .slice(0, limit);
+    const messages: Message[] = results.flat().map(this.toDomainObject).slice(0, limit);
 
     return messages;
   }
@@ -195,14 +164,18 @@ export class MessageRepositoryDynamoose implements IMessageRepository {
 
     const messages = await this.paginate(buildQuery, limit);
 
-    return messages.map((message) => ({
+    return messages.map(this.toDomainObject);
+  }
+
+  private toDomainObject(message: MessageWithKey): Message {
+    return {
       id: message.id,
       content: message.content,
       sender: message.sender,
       status: message.status,
       createdAt: message.createdAt,
       updatedAt: message.updatedAt,
-    }));
+    };
   }
 
   // Isso foi gerado pelo Claude
