@@ -24,7 +24,8 @@ export class ListMessagesQueryRequestDto {
     { message: 'Informe uma data/hora de início válida em formato ISO 8601' },
   )
   @ApiPropertyOptional({
-    description: 'Data/hora de início da busca em formato ISO 8601 (requerido se não for informado remetente)',
+    description:
+      'Data/hora de início da busca em formato ISO 8601 (requerido se não for informado remetente ou data de fim)',
     example: new Date().toISOString().slice(0, 10) + 'T00:00:00.000Z',
   })
   startDate: string;
@@ -39,7 +40,8 @@ export class ListMessagesQueryRequestDto {
     { message: 'Informe uma data/hora de fim válida em formato ISO 8601' },
   )
   @ApiPropertyOptional({
-    description: 'Data/hora de fim da busca em formato ISO 8601 (requerido se não for informado remetente)',
+    description:
+      'Data/hora de fim da busca em formato ISO 8601 (requerido se não for informado remetente ou data de início)',
     example: new Date().toISOString().slice(0, 10) + 'T23:59:59.999Z',
   })
   endDate: string;

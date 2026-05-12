@@ -25,7 +25,7 @@ export function MessageCreateDocs() {
         'Dados da mensagem': {
           value: {
             content: 'Olá, esta é uma mensagem de teste.',
-            sender: 'user123',
+            sender: 'user',
             status: MESSAGE_STATUS.RECEIVED,
           } as CreateMessageRequestDto,
         },
